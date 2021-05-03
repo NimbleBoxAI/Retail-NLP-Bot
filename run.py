@@ -38,10 +38,10 @@ appname = st.sidebar.selectbox(
   ["None", "AddressTagger", "Catalog Order", "Custom Order"]
 )
 
-# # current bypass, to be removed at final delivery - @yashbonde
-# if appname != "AddressTagger":
-#   st.write("Other apps are WIP. Why don't you use `AddressTagger`, it's interactive 💥")
-#   appname = "AddressTagger"
+# current bypass, to be removed at final delivery - @yashbonde
+if appname != "AddressTagger":
+  st.write("Other apps are WIP. Why don't you use `AddressTagger`, it's interactive 💥")
+  appname = "AddressTagger"
 
 if appname == "AddressTagger":
   # run the Address bot here
