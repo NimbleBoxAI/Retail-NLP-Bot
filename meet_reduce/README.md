@@ -20,3 +20,8 @@ pip install youtube_dl pytube      # youtube things
 pip install transformers datasets  # models
 pip install soundfile pydub        # audio files
 ```
+
+### Files
+
+- `45409d6e226520624c3fd510ff187276d803f1b3b1832534b8232dd3002c09ba_captions.srt`: SRT file for above mentioned podcast, can be downloaded from the notebook, given here for reference.
+- `record.py`: file to record your own audio. Also pass number of seconds if you want as `record.py 23`, will record for 23 seconds.

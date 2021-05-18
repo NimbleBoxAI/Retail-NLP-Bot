@@ -1,8 +1,9 @@
 # Inspired from:
 # https://stackoverflow.com/questions/40704026/voice-recording-using-pyaudio
 
-import pyaudio
+import sys
 import wave
+import pyaudio
  
 
 device_index = 2
@@ -21,7 +22,11 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
 CHUNK = 512
-RECORD_SECONDS = 5
+try:
+  RECORD_SECONDS = int(sys.argv[1])
+except:
+  print("Could not capture number of seconds, defaulting to 5")
+  RECORD_SECONDS = 5
 WAVE_OUTPUT_FILENAME = "recordedFile.wav"
 
 index = int(input("Which device you want to use: "))
