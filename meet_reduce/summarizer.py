@@ -1,6 +1,8 @@
-import re
+
 import os
+import random
 import hashlib
+import datetime
 from glob import glob
 from dateutil.parser import parse as date_parse
 
@@ -12,8 +14,8 @@ md5 = lambda x: hashlib.md5(x.encode("utf-8")).hexdigest()
 class Processor():
   def __init__(self):
     here = os.path.split(os.path.abspath(__file__))[0]
-    cap_folder = os.path.join(here, 'captions')
-    all_cap_files = glob(f"{cap_folder}/*.srt")
+    self.cap_folder = os.path.join(here, 'captions')
+    all_cap_files = glob(f"{self.cap_folder}/*.srt")
     self.all_cap_files = {x.split('/')[-1][:-4]: x for x in all_cap_files}
 
   def parse_captions(self, caption_string):
@@ -27,20 +29,52 @@ class Processor():
       # \xa0 is actually non-breaking space in Latin1 (ISO 8859-1), also chr(160)
       _content = _content.replace(u'\xa0', u' ').strip()
       captions.append({"id": _id, "from": _from, "to": _to, "content": _content})
-    return captions
+    
+    # merge captions that come under 1 second of each other
+    sections = []
+    buffer = [[captions[0]]] # rolling buffer
+    for i in range(len(captions) - 1):
+      x = captions[i+1]
+      last_cap = buffer[-1][-1]
+      if x["from"] - last_cap["to"] < datetime.timedelta(0, 1):
+        buffer[-1].append(x)
+      else:
+        buffer.append([x])
+        
+    merged_captions = []
+    for b in buffer:
+      merged_captions.append({
+        "id": [x["id"] for x in b],
+        "from": b[0]["from"],
+        "to": b[-1]["to"],
+        "content": " ".join([x["content"] for x in b])
+      })
+
+    return merged_captions
 
   def process(self, url, max_tries = 20):
-    if not md5(url) in self.all_cap_files:
+    _file = md5(url)
+    if not _file in self.all_cap_files:
       # get captions and return if there is some error
       caption = get_caption(url, max_tries)
       if isinstance(caption, list):
         return f"[This]({url}) video has no captions"
       if caption is None:
         return f"Failed to fetch captions for [this]({url}) video."
+      else:
+        # save and cache captions
+        fp = f"{self.cap_folder}/{_file}.srt"
+        with open(fp, "w") as f:
+          f.write(caption)
+        self.all_cap_files[_file] = fp
     else:
-      with open(self.all_cap_files[md5(url)], "r") as f:
+      with open(self.all_cap_files[_file], "r") as f:
         caption = f.read()
 
     # parse caption string into caption blocks
-    caption = self.parse_captions(caption)
-    return caption[0]
+    captions = self.parse_captions(caption)
+    heights = [] # word density plot
+    for x in captions:
+      heights.extend([len(x["content"].split()), ] * len(x["id"]))
+    return random.choice(captions), heights
+    

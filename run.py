@@ -17,7 +17,7 @@ def get_processors():
   from address_tagger.model import Processor as AddressTaggerProcessor
   from meet_reduce.summarizer import Processor as MeetReduceSummarizerProcessor
   return {
-    "AddressTagger": AddressTaggerProcessor("distilbert-base-cased", "./address_tagger/params.npy"),
+    # "AddressTagger": AddressTaggerProcessor("distilbert-base-cased", "./address_tagger/params.npy"),
     "MeetReduce": MeetReduceSummarizerProcessor()
   }
 
@@ -47,7 +47,7 @@ appname = st.sidebar.selectbox(
 # current bypass, to be removed at final delivery - @yashbonde
 if appname not in ["MeetReduce", "AddressTagger"]:
   st.write("Other apps are WIP. Why don't you use `AddressTagger`, it's interactive 💥")
-  appname = "AddressTagger"
+  appname = "MeetReduce"
 
 if appname == "AddressTagger":
   # run the Address bot here
@@ -73,5 +73,6 @@ elif appname == "MeetReduce":
     if not re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", input_text):
       st.write(f"Please enter correct URL, got: `{input_text}`")
     else:
-      data = processor.process(input_text)
-      st.write(data)
+      summ, heights = processor.process(input_text)
+      st.area_chart(heights)
+      st.write(summ)
