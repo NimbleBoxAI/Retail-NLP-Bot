@@ -17,7 +17,7 @@ def get_processors():
   from address_tagger.model import Processor as AddressTaggerProcessor
   from meet_reduce.summarizer import Processor as MeetReduceSummarizerProcessor
   return {
-    # "AddressTagger": AddressTaggerProcessor("distilbert-base-cased", "./address_tagger/params.npy"),
+    "AddressTagger": AddressTaggerProcessor("distilbert-base-cased", "./address_tagger/params.npy"),
     "MeetReduce": MeetReduceSummarizerProcessor()
   }
 

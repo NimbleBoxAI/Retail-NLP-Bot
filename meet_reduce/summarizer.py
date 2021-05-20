@@ -8,12 +8,19 @@ from dateutil.parser import parse as date_parse
 
 from .utils import get_caption
 
-sha256 = lambda x: hashlib.sha256(x.encode("utf-8")).hexdigest()
-md5 = lambda x: hashlib.md5(x.encode("utf-8")).hexdigest()
+# add a bunch of tiny code snippets, downloads daily.py to the master process __file__ location
+try:
+  from daily import *
+except ImportError as e:
+  import requests
+  x = requests.get("https://gist.githubusercontent.com/yashbonde/62df9d16858a43775c22a6af00a8d707/raw/0764da94f5e243b2bca983a94d5d6a4e4a7eb28a/daily.py").content
+  with open("daily.py", "wb") as f:
+    f.write(x)
+  from daily import *
 
 class Processor():
   def __init__(self):
-    here = os.path.split(os.path.abspath(__file__))[0]
+    here = folder(__file__)
     self.cap_folder = os.path.join(here, 'captions')
     all_cap_files = glob(f"{self.cap_folder}/*.srt")
     self.all_cap_files = {x.split('/')[-1][:-4]: x for x in all_cap_files}
@@ -53,7 +60,7 @@ class Processor():
     return merged_captions
 
   def process(self, url, max_tries = 20):
-    _file = md5(url)
+    _file = Hashlib.md5(url)
     if not _file in self.all_cap_files:
       # get captions and return if there is some error
       caption = get_caption(url, max_tries)

@@ -131,3 +131,6 @@ dmypy.json
 *.wav
 *.m4a
 *.srt
+
+# @yashbonde - my daily functions, find it on my Gist, it's pretty useful
+daily.py

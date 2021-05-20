@@ -2,14 +2,14 @@ import re
 import torch
 from torch.utils.data import DataLoader
 from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForMaskedLM, AutoModel, BertTokenizerFast
+from transformers import AutoModel, BertTokenizerFast
 
 # add a bunch of tiny code snippets, downloads daily.py to the master process __file__ location
 try:
   from daily import *
 except ImportError as e:
   import requests
-  x = requests.get("https://gist.githubusercontent.com/yashbonde/62df9d16858a43775c22a6af00a8d707/raw/60c79e8fa29137c3b171197218d899e84308f55a/daily.py").content
+  x = requests.get("https://gist.githubusercontent.com/yashbonde/62df9d16858a43775c22a6af00a8d707/raw/0764da94f5e243b2bca983a94d5d6a4e4a7eb28a/daily.py").content
   with open("daily.py", "wb") as f:
     f.write(x)
   from daily import *
