@@ -37,3 +37,5 @@ pip install soundfile pydub        # audio files
 - `record.py`: file to record your own audio. Also pass number of seconds if you want as `record.py 23`, will record for 23 seconds.
 - `collate_methods.py`: file with different collation methods for training `AutoCase-BERT`
 - `AutoCase-BERT`: sample notebook for how to train a BERT for AutoCasing
+- `usingGPT`: How to get summaries using GPT models
+
