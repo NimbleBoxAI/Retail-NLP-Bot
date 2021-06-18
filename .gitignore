@@ -134,3 +134,5 @@ dmypy.json
 
 # @yashbonde - my daily functions, find it on my Gist, it's pretty useful
 daily.py
+*.key
+.model-cache/

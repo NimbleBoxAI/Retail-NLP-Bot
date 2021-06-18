@@ -6,24 +6,46 @@ import datetime
 from glob import glob
 from dateutil.parser import parse as date_parse
 
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
 from .utils import get_caption
 
-# add a bunch of tiny code snippets, downloads daily.py to the master process __file__ location
-try:
-  from daily import *
-except ImportError as e:
-  import requests
-  x = requests.get("https://gist.githubusercontent.com/yashbonde/62df9d16858a43775c22a6af00a8d707/raw/0764da94f5e243b2bca983a94d5d6a4e4a7eb28a/daily.py").content
-  with open("daily.py", "wb") as f:
-    f.write(x)
-  from daily import *
+from daily import *
+from gpt import GPT, get_keywords
 
+# ---- functions
+  
+def get_model(name = "EleutherAI/gpt-neo-2.7B", cache_dir = ".model-cache/"):
+  """load the model and tokenizer from hf-repos. Check out "hf.co/models" for
+  more models.
+
+  Note: try to provide a `cache_dir`as this will download all the relevant materials
+  in this folder. Since the models can become very large it's a good idea to avoid
+  downloading again and again. 
+
+  Args:
+      name (str, optional): hf model name. Defaults to "EleutherAI/gpt-neo-2.7B".
+      cache_dir (str, optional): where to cache your model. Defaults to ".model-cache/".
+
+  Returns:
+      model, tokenizer
+  """
+  tokenizer = AutoTokenizer.from_pretrained(name, cache_dir = cache_dir)
+  model = AutoModelForCausalLM.from_pretrained(name, cache_dir = cache_dir)
+  device = torch.device("cuda:0") if torch.cuda.is_available() else "CPU"
+  model = model.to(device).eval()
+  return GPT(model, tokenizer)
+
+# ---- class
 class Processor():
-  def __init__(self):
+  def __init__(self, hf_backbone="EleutherAI/gpt-neo-2.7B"):
     here = folder(__file__)
     self.cap_folder = os.path.join(here, 'captions')
     all_cap_files = glob(f"{self.cap_folder}/*.srt")
     self.all_cap_files = {x.split('/')[-1][:-4]: x for x in all_cap_files}
+
+    self.gpt = get_model(hf_backbone)
 
   def parse_captions(self, caption_string):
     # next we parse the captions and structure them
@@ -83,5 +105,7 @@ class Processor():
     heights = [] # word density plot
     for x in captions:
       heights.extend([len(x["content"].split()), ] * len(x["id"]))
-    return random.choice(captions), heights
     
+    keywords = get_keywords(captions)
+    return keywords
+

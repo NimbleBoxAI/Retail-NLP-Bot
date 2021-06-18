@@ -73,6 +73,5 @@ elif appname == "MeetReduce":
     if not re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", input_text):
       st.write(f"Please enter correct URL, got: `{input_text}`")
     else:
-      summ, heights = processor.process(input_text)
-      st.area_chart(heights)
+      summ = processor.process(input_text)
       st.write(summ)
