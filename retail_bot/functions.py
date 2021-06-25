@@ -1,3 +1,5 @@
+# This function contains modules that can be used to extract relevant parts of an unstructured query.
+
 def get_name(gpt, query):
     
     prompt = f"""Input: "Raghav Subbarayan, 2107, Panchratna, Opera House, Mumbai, Maharashtra-400004 Phone Number: 02223614567"
