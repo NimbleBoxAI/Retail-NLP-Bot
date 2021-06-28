@@ -1,8 +1,11 @@
 # @yashbonde - 3rd May, 2021 for NBX
 
+import os
 import torch
 import numpy as np
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM
+from .utils import folder, GPT
+from .functions import *
 
 ENT_ZERO  = {
   "text": None,
@@ -11,7 +14,67 @@ ENT_ZERO  = {
   "entity": None
 }
 
-class Processor:
+
+class ProcessorGPT():
+  def __init__(self, hf_backbone ="EleutherAI/gpt-neo-2.7B", cache_dir = "../hf-cache/"):
+    print("Loading GPT Processor ...")
+    assert "gpt" in hf_backbone.lower(), f"Supports only GPT Models, got: {hf_backbone}"
+
+    cache_dir = os.path.join(folder(__file__), cache_dir)
+
+    self.tokenizer = AutoTokenizer.from_pretrained(hf_backbone, cache_dir = cache_dir)
+    self.device = torch.device("cuda:0") if torch.cuda.is_available() else "cpu"
+    self.model = AutoModel.from_pretrained(hf_backbone, cache_dir = cache_dir)
+    print("Model loaded ..., moving to GPU")
+    self.model = self.model.to(self.device).eval()
+    self.model_config = self.model.config
+
+    self.gpt = GPT(self.model)
+
+
+    self.ID_TO_TAG = {
+      0: 'null',
+      1: 'name',
+      2: 'address',
+      3: 'city',
+      4: 'state',
+      5: 'pincode',
+      6: 'phone'
+    }
+    self.TAG_TO_ID = {v:k for k,v in self.ID_TO_TAG.items()}
+
+  def process(self, text):
+    # method to perform inference on input text and return industry standard api
+    name = get_name(self.gpt, text)
+    city = get_city(self.gpt, text)
+    pc = get_pincode(self.gpt, text)
+
+    # get the 
+    t2 = text.replace(name, "")
+    t2 = t2.replace(city, "")
+    t2 = t2.replace(pc, "").strip()
+
+    return {
+      "text": text,
+      "entities": [{
+        "text": name,
+        "entity": self.TAG_TO_ID["name"]
+      }, {
+        "text": city,
+        "entity": self.TAG_TO_ID["city"]
+      }, {
+        "text": pc,
+        "entity": self.TAG_TO_ID["pincode"]
+      }, {
+        "text": t2,
+        "entity": self.TAG_TO_ID["address"]
+      }]
+    }
+
+
+# BERT processor is the old method used for getting the address, now we use
+# the generic GPT based Processor  above
+class ProcessorBERT:
   def __init__(self, hf_backbone, np_path):
     print("Loading AddressTagger ...")
     assert "bert" in hf_backbone.lower(), f"Supports only BERT Models, got: {hf_backbone}"
