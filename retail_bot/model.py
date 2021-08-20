@@ -15,22 +15,33 @@ ENT_ZERO  = {
 }
 
 
+def get_model(name = "EleutherAI/gpt-neo-2.7B", cache_dir = ".model-cache/"):
+  """load the model and tokenizer from hf-repos. Check out "hf.co/models" for
+  more models.
+
+  Note: try to provide a `cache_dir`as this will download all the relevant materials
+  in this folder. Since the models can become very large it's a good idea to avoid
+  downloading again and again. 
+
+  Args:
+      name (str, optional): hf model name. Defaults to "EleutherAI/gpt-neo-2.7B".
+      cache_dir (str, optional): where to cache your model. Defaults to ".model-cache/".
+
+  Returns:
+      model, tokenizer
+  """
+  tokenizer = AutoTokenizer.from_pretrained(name, cache_dir = cache_dir)
+  model = AutoModelForCausalLM.from_pretrained(name, cache_dir = cache_dir)
+  device = torch.device("cuda:0") if torch.cuda.is_available() else "CPU"
+  model = model.to(device).eval()
+  return GPT(model, tokenizer)
+
+
 class ProcessorGPT():
   def __init__(self, hf_backbone ="EleutherAI/gpt-neo-2.7B", cache_dir = "../hf-cache/"):
     print("Loading GPT Processor ...")
     assert "gpt" in hf_backbone.lower(), f"Supports only GPT Models, got: {hf_backbone}"
-
-    cache_dir = os.path.join(folder(__file__), cache_dir)
-
-    self.tokenizer = AutoTokenizer.from_pretrained(hf_backbone, cache_dir = cache_dir)
-    self.device = torch.device("cuda:0") if torch.cuda.is_available() else "cpu"
-    self.model = AutoModel.from_pretrained(hf_backbone, cache_dir = cache_dir)
-    print("Model loaded ..., moving to GPU")
-    self.model = self.model.to(self.device).eval()
-    self.model_config = self.model.config
-
-    self.gpt = GPT(self.model)
-
+    self.gpt = get_model()
 
     self.ID_TO_TAG = {
       0: 'null',

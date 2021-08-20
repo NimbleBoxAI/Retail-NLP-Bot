@@ -14,10 +14,10 @@ import streamlit as st
 # https://docs.streamlit.io/en/stable/api.html#streamlit.cache
 @st.cache(allow_output_mutation = True)
 def get_processors():
-  from address_tagger.model import Processor as AddressTaggerProcessor
+  from retail_bot.model import ProcessorGPT as AddressTaggerProcessor
   from meet_reduce.summarizer import Processor as MeetReduceSummarizerProcessor
   return {
-    "AddressTagger": AddressTaggerProcessor("distilbert-base-cased", "./address_tagger/params.npy"),
+    "AddressTagger": AddressTaggerProcessor(),
     "MeetReduce": MeetReduceSummarizerProcessor()
   }
 
