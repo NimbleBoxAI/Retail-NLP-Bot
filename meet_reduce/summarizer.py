@@ -11,8 +11,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from .utils import get_caption
 
-from daily import *
-from gpt import GPT, get_keywords
+from .daily import *
+from .gpt import GPT, get_keywords
 
 # ---- functions
   
@@ -31,9 +31,13 @@ def get_model(name = "EleutherAI/gpt-neo-2.7B", cache_dir = ".model-cache/"):
   Returns:
       model, tokenizer
   """
+  if os.getenv("NBX_LOCAL_DEV", False):
+    name = "sshleifer/tiny-gpt2"
+    print("Using local dev model with model name:", name)
+
   tokenizer = AutoTokenizer.from_pretrained(name, cache_dir = cache_dir)
   model = AutoModelForCausalLM.from_pretrained(name, cache_dir = cache_dir)
-  device = torch.device("cuda:0") if torch.cuda.is_available() else "CPU"
+  device = torch.device("cuda:0") if torch.cuda.is_available() else "cpu"
   model = model.to(device).eval()
   return GPT(model, tokenizer)
 
@@ -106,6 +110,6 @@ class Processor():
     for x in captions:
       heights.extend([len(x["content"].split()), ] * len(x["id"]))
     
-    keywords = get_keywords(captions)
+    keywords = get_keywords(captions, self.gpt)
     return keywords
 
