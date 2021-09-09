@@ -1,8 +1,11 @@
 # Retail-NLP-Bot
 
 Simple NLP agents to solve everyday tasks in retail like AddressTagger. Find individual models and corresponding notebooks in each folder:
-- [`address_tagger/`](./address_tagger/): Splits the input address into it's entities.
-- [`meet_reduce/`](./meet_reduce/): [WIP] App to convert the meeting audio to notes.
+- [`retail_bot/`](./retail_bot/): Retail bot with the following items:
+  - "AddressTagger"
+  - "Catalog Order"
+  - "Custom Order"
+- [`meet_reduce/`](./meet_reduce/): App to search through meeting notes
 
 Files:
 - `run.py`: streamlit webapp for this example
