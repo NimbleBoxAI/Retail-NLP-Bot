@@ -17,8 +17,8 @@ def get_processors():
   from retail_bot.model import ProcessorGPT as AddressTaggerProcessor
   from meet_reduce.summarizer import Processor as MeetReduceSummarizerProcessor
   return {
-    "AddressTagger": AddressTaggerProcessor(),
-    "MeetReduce": MeetReduceSummarizerProcessor()
+    # "AddressTagger": AddressTaggerProcessor(hf_backbone = "sshleifer/tiny-gpt2"),
+    "MeetReduce": MeetReduceSummarizerProcessor(hf_backbone = "sshleifer/tiny-gpt2")
   }
 
 # load all the processors before the app starts

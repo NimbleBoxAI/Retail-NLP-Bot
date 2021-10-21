@@ -12,7 +12,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from .utils import get_caption
 
 from .daily import *
-from .gpt import GPT, get_keywords
+from .gpt import GPT, get_keywords_from_caption
 
 # ---- functions
   
@@ -43,7 +43,8 @@ def get_model(name = "EleutherAI/gpt-neo-2.7B", cache_dir = ".model-cache/"):
 
 # ---- class
 class Processor():
-  def __init__(self, hf_backbone="EleutherAI/gpt-neo-2.7B"):
+  def __init__(self, hf_backbone):
+    print("Loading GPT Processor (Meet Reduce) ...")
     here = folder(__file__)
     self.cap_folder = os.path.join(here, 'captions')
     all_cap_files = glob(f"{self.cap_folder}/*.srt")
@@ -89,12 +90,14 @@ class Processor():
     _file = Hashlib.md5(url)
     if not _file in self.all_cap_files:
       # get captions and return if there is some error
+      print("Getting captions ...")
       caption = get_caption(url, max_tries)
       if isinstance(caption, list):
         return f"[This]({url}) video has no captions"
       if caption is None:
         return f"Failed to fetch captions for [this]({url}) video."
       else:
+        print("Saving captions ...")
         # save and cache captions
         fp = f"{self.cap_folder}/{_file}.srt"
         with open(fp, "w") as f:
@@ -105,11 +108,13 @@ class Processor():
         caption = f.read()
 
     # parse caption string into caption blocks
+    print("Parse captions to blocks ...")
     captions = self.parse_captions(caption)
     heights = [] # word density plot
     for x in captions:
       heights.extend([len(x["content"].split()), ] * len(x["id"]))
     
-    keywords = get_keywords(captions, self.gpt)
+    print("Generating keywords ... (this will take time)")
+    keywords = get_keywords_from_caption(captions[:3], self.gpt)
     return keywords
 

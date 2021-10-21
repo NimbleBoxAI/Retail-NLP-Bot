@@ -43,10 +43,9 @@ def get_model(name = "EleutherAI/gpt-neo-2.7B", cache_dir = ".model-cache/"):
 
 
 class ProcessorGPT():
-  def __init__(self, hf_backbone ="EleutherAI/gpt-neo-2.7B", cache_dir = "../hf-cache/"):
-    print("Loading GPT Processor ...")
-    assert "gpt" in hf_backbone.lower(), f"Supports only GPT Models, got: {hf_backbone}"
-    self.gpt = get_model()
+  def __init__(self, hf_backbone, cache_dir = "../hf-cache/"):
+    print("Loading GPT Processor (Retail-Bot) ...")
+    self.gpt = get_model(hf_backbone, cache_dir)
 
     self.ID_TO_TAG = {
       0: 'null',

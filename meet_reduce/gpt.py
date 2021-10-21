@@ -248,7 +248,16 @@ def get_keywords(text, gpt, r = 4):
 
 ###
 
-Text: "Black-on-black ware is a 20th- and 21st-century pottery tradition developed by the Puebloan Native American ceramic artists in Northern New Mexico. Traditional reduction-fired blackware has been made for centuries by pueblo artists. Black-on-black ware of the past century is produced with a smooth surface, with the designs applied through selective burnishing or the application of refractory slip. Another style involves carving or incising designs and selectively polishing the raised areas. For generations several families from Kha'po Owingeh and P'ohwhóge Owingeh pueblos have been making black-on-black ware with the techniques passed down from matriarch potters. Artists from other pueblos have also produced black-on-black ware. Several contemporary artists have created works honoring the pottery of their ancestors."
+Text: "Black-on-black ware is a 20th- and 21st-century pottery tradition developed by the
+Puebloan Native American ceramic artists in Northern New Mexico. Traditional reduction-fired
+blackware has been made for centuries by pueblo artists. Black-on-black ware of the past century
+is produced with a smooth surface, with the designs applied through selective burnishing or the
+application of refractory slip. Another style involves carving or incising designs and
+selectively polishing the raised areas. For generations several families from Kha'po
+Owingeh and P'ohwhóge Owingeh pueblos have been making black-on-black ware with the
+techniques passed down from matriarch potters. Artists from other pueblos have also produced
+black-on-black ware. Several contemporary artists have created works honoring the pottery of
+their ancestors."
 
 Keywords: Pueblo, art, pottery, black, black ware
 
@@ -256,7 +265,7 @@ Keywords: Pueblo, art, pottery, black, black ware
 
 Text: "{text}"
 
-keywords:"""
+Keywords:"""
 
   p = prompt.format(text = text)
   words = set()
@@ -269,16 +278,21 @@ keywords:"""
     )
 
     for s in out:
-      ws = s.split("###")[2].split("\nkeywords:")[-1].split(",")
+      ws = s.split("###")[2].split("\nKeywords:")[-1].split(",")
       for w in ws:
         w = w.strip().lower()
         # print("--->", w, w in ["pueblo", "art", "pottery", "black", "black ware"])
         if w and len(w.split()) < 4 and w not in ["pueblo", "art", "pottery", "black", "black ware"]:
           words.add(w)
+
+        for _w in w.split()[:2]:
+          words.add(_w)
+
   return list(words)
 
 
 def clean_keywords(keywords, gpt):
+  print(keywords)
   if isinstance(keywords[0], list):
     return [clean_keywords[x] for x in keywords]
 
@@ -325,7 +339,7 @@ Important words:'''
 
 # ----- main functions
 
-def get_keywords(captions: list, gpt: GPT):
+def get_keywords_from_caption(captions: list, gpt: GPT):
   """
   Args:
     captions (list): captions is the list with output of function `Processor.parse_captions()`
@@ -347,19 +361,25 @@ def get_keywords(captions: list, gpt: GPT):
   # step 1: format the sentence
   format_buff_size = 100
   fsent = []
-  for i in range(0, len(capstr), format_buff_size):
+  pbar = trange(0, len(capstr), format_buff_size)
+  for i in pbar:
     r = format_sentence(" ".join(capstr.split()[i:i+format_buff_size]) + ".", gpt)
     fsent.append(r)
+    pbar.set_description(f"Cleaned {i+1} sentences!")
 
   # step 2: get keywords
   words = []
-  for _, o in zip(trange(len(fsent)), fsent):
-    words.append(get_keywords(o, gpt))
-  
+  pbar = trange(len(fsent))
+  for _, o in zip(pbar, fsent):
+    out = get_keywords(o, gpt)
+    words.append(out)
+    pbar.set_description(f"Got {sum([len(x) for x in words])} keywords from {len(words)} sentences")
+
   # step 3: clean the key-words
   w2 = []
-  for w in words:
-      out = clean_keywords(w, gpt)
+  pbar = trange(len(words))
+  for _, w in zip(pbar, words):
+      out = clean_keywords(", ".join(w), gpt)
       w2.append(out)
 
   return w2

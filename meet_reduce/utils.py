@@ -1,6 +1,11 @@
-
+# define the util functions
 import time
+import sys
 from requests import HTTPError
+
+from .daily import folder
+sys.path.append(folder(folder(__file__)))
+
 from pytube import YouTube
 
 def get_caption(x, n, m = 0):
